@@ -5,6 +5,10 @@ inputs:
   cmake-args:
     description: 'The args for generating CMake project'
     required: true
+  debug:
+    description: 'Do debug build'
+    required: false
+    default: 'false'
   build-frontend:
     description: 'Build the frontend mlx package'
     required: false
@@ -45,6 +49,7 @@ runs:
       shell: bash
       env:
         CMAKE_ARGS: ${{ inputs.cmake-args }}
+        DEBUG: ${{ inputs.debug == 'true' && 1 || 0 }}
         MACOSX_DEPLOYMENT_TARGET: ${{ inputs.macos-target }}
       run: |
         python setup.py clean --all
@@ -68,6 +73,7 @@ runs:
       shell: bash
       env:
         CMAKE_ARGS: ${{ inputs.cmake-args }}
+        DEBUG: ${{ inputs.debug == 'true' && 1 || 0 }}
         MACOSX_DEPLOYMENT_TARGET: ${{ inputs.macos-target }}
       run: |
         python setup.py clean --all
