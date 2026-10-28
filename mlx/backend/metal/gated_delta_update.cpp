@@ -15,14 +15,14 @@ namespace mlx::core::fast {
 namespace {
 
 inline int gated_delta_chunk_size(int T) {
-  const bool nax = metal::is_nax_available();
-  const int C = config::get("GATED_DELTA_CHUNK", T > 8 ? (nax ? 16 : 8) : 1);
+  bool nax = metal::is_nax_available();
+  int C = config::get("MLX_GATED_DELTA_CHUNK", T > 8 ? (nax ? 16 : 8) : 1);
   return (C == 16 && !nax) ? 8 : C;
 }
 
 inline int gated_delta_chunk_size_vjp() {
-  const bool nax = metal::is_nax_available();
-  return nax ? config::get("GATED_DELTA_CHUNK_VJP", 16) : 1;
+  bool nax = metal::is_nax_available();
+  return nax ? config::get("MLX_GATED_DELTA_CHUNK_VJP", 16) : 1;
 }
 
 inline int gated_delta_ckpt(int chunk) {
@@ -66,11 +66,11 @@ array scratch_alloc(Shape shape, Dtype dt, const Stream& s) {
 } // namespace
 
 bool GatedDeltaUpdate::use_fallback(
-    const int Hk,
-    const int Dk,
-    const int Hv,
-    const int Dv,
-    const bool has_mask,
+    int Hk,
+    int Dk,
+    int Hv,
+    int Dv,
+    bool has_mask,
     Stream s) {
   if (s.device == Device::cpu) {
     return true;
@@ -220,15 +220,12 @@ void GatedDeltaUpdate::eval_gpu(
 // BACKWARD PASS STUFF //
 /////////////////////////
 bool GatedDeltaUpdateVJP::use_fallback(
-    const int Hk,
-    const int Dk,
-    const int Hv,
-    const int Dv,
+    int Hk,
+    int Dk,
+    int Hv,
+    int Dv,
     Stream s) {
   if (s.device == Device::cpu) {
-    return true;
-  }
-  if (config::get("GATED_DELTA_VJP_FALLBACK", 0) != 0) {
     return true;
   }
   return !supported_gated_delta_shape(Hk, Dk, Hv, Dv);
